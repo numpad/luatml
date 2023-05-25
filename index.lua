@@ -1,13 +1,18 @@
-#!/usr/bin/env lua
+#!/usr/bin/env luajit
 
 require 'luatml'
 
-html_registertags({"html", "head", "title", "body", "div", "p", "span", "h1", "ul", "li", "a", "form", "input" })
+html_registertags({
+	"html", "head", "title", "body",
+	"div", "p", "span", "h1", "ul",
+	"li", "a", "form", "input",
+	"meta", "style",
+})
 
 function form_login()
 	return form {
 		method="POST",
-		action="/auth/login",
+		--action="/auth/login",
 		input {
 			type="text",
 			placeholder="Username",
@@ -42,7 +47,8 @@ end
 page = html {
 	head {
 		title "Page",
-		html_tag"meta" { charset="utf-8" }
+		meta { charset="utf-8" },
+		meta { name="viewport", content="width=device-width, initial-scale=1" },
 	},
 	body {
 		div {
@@ -62,6 +68,11 @@ page = html {
 					document.write('Current Time:' + new Date())
 				]],
 				form_login,
+				ul {
+					li { "uri: " .. (os.getenv("REQUEST_URI") or '') },
+					li { "method: " .. (os.getenv("REQUEST_METHOD") or '') },
+					li { io.read() },
+				},
 			},
 		},
 		html_tag"script" [[
@@ -74,6 +85,10 @@ page = html {
 }
 var = 18
 
+local header = {
+	["Content-Type"] = "text/html",
+	["Status"] = "200",
+}
 
-print(html_tostring(page))
+print(html_response(header, page))
 

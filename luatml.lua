@@ -11,6 +11,20 @@ function html_registertags(tags)
 	end
 end
 
+function html_response(header, body)
+	response = ''
+
+	for k, v in pairs(header) do
+		response = response .. string.format('%s: %s\n', k, v)
+	end
+	response = response .. '\n'
+	if type(body) == 'table' and body.tag ~= nil then
+		response = response .. html_tostring(body)
+	end
+
+	return response
+end
+
 -- converts a `html_tag`-tree into plaintext HTML.
 -- example:
 -- 

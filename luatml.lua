@@ -18,11 +18,42 @@ function html_response(header, body)
 		response = response .. string.format('%s: %s\n', k, v)
 	end
 	response = response .. '\n'
+
 	if type(body) == 'table' and body.tag ~= nil then
 		response = response .. html_tostring(body)
 	end
 
 	return response
+end
+
+-- headers
+function html_header_html()
+	return {
+		["Status"] = "200 Ok",
+		["Content-Type"] = "text/html",
+	}
+end
+
+function html_header_redirect(url)
+	return {
+		["Status"] = "302 Found",
+		["Location"] = url,
+	}
+end
+
+-- request data
+function html_request()
+	return {
+		method      = os.getenv('REQUEST_METHOD'),
+		contenttype = os.getenv('CONTENT_TYPE'),
+		query       = os.getenv('QUERY_STRING'),
+		uri         = os.getenv('REQUEST_URI'),
+		cookies     = os.getenv('HTTP_COOKIE'),
+		useragent   = os.getenv('HTTP_USER_AGENT'),
+		remoteip    = os.getenv('REMOTE_ADDR'),
+		remoteport  = os.getenv('REMOTE_PORT'),
+		protocol    = os.getenv('SERVER_PROTOCOL'),
+	}
 end
 
 -- converts a `html_tag`-tree into plaintext HTML.

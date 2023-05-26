@@ -1,6 +1,7 @@
 #!/usr/bin/env luajit
 
 require 'luatml'
+math.randomseed(os.time())
 
 html_registertags({
 	"html", "head", "title", "body",
@@ -13,6 +14,7 @@ function form_login()
 	return form {
 		method="POST",
 		--action="/auth/login",
+		style="display: flex; flex-direction: column; row-gap: 4px;",
 		input {
 			type="text",
 			placeholder="Username",
@@ -44,6 +46,20 @@ function counter()
 	return a { ret, href="/post" }
 end
 
+function html_if(exp, html)
+	if exp then return html end
+
+	return ''
+end
+function html_if2(exp)
+	return function(html)
+		-- TODO: lists not working, [1] is quickfix
+		if exp then return html[1] end
+
+		return ''
+	end
+end
+
 page = html {
 	head {
 		title "Page",
@@ -56,11 +72,21 @@ page = html {
 			p {
 				"User data: ", var, ". Wow... nice!"
 			},
+			html_tag"h2" "Types:",
+			321,
+			"text",
+			{7, "ate", 9}, -- TODO: lists not working
 			div {
 				"Functions?",
 				ul {
-					li { counter },
-					li { counter },
+					li { "41..", counter },
+					li { "42..", counter },
+					html_if(math.random() < 0.5,
+						li { "43..", counter } ),
+					html_if2(math.random() < 0.5) {
+						li { "44..", counter },
+					},
+					li { "45..", counter },
 				}
 			},
 			div {
@@ -69,8 +95,8 @@ page = html {
 				]],
 				form_login,
 				ul {
-					li { "uri: " .. (os.getenv("REQUEST_URI") or '') },
-					li { "method: " .. (os.getenv("REQUEST_METHOD") or '') },
+					li { "uri: " .. html_request().uri },
+					li { "method: " .. html_request().method },
 					li { io.read() },
 				},
 			},
@@ -85,10 +111,9 @@ page = html {
 }
 var = 18
 
-local header = {
-	["Content-Type"] = "text/html",
-	["Status"] = "200",
-}
-
-print(html_response(header, page))
+if os.getenv('REQUEST_METHOD') == 'POST' then
+	print(html_response(html_header_redirect("/test")))
+else
+	print(html_response(html_header_html(), page))
+end
 

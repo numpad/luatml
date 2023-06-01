@@ -3,6 +3,25 @@ require 'luatml'
 
 html_registertags({"html", "head", "meta", "body", "div", "p"})
 
+function compare_routes(a, b)
+	-- compare path
+	if #a.path ~= #b.path then return false end
+	for i = 1, #a.path do
+		if a.path[i] ~= b.path[i] then
+			return false
+		end
+	end
+
+	-- compare query
+	for key, value in pairs(a.query) do
+		if a.query[key] ~= b.query[key] then
+			return false
+		end
+	end
+	
+	return true
+end
+
 function testcase(name)
 	_ALL_TESTCASES = _ALL_TESTCASES or {}
 
@@ -34,21 +53,9 @@ function testcase(name)
 					local ok = true
 					for i, route in ipairs(routes) do
 						local expected = value[i]
-						
-						-- subpaths
-						for j, subpath in ipairs(route.path) do
-							local expected_path = expected[j]
-							if expected_path ~= subpath then
-								print("subpath dont match")
-							end
-						end
 
-						-- query
-						for qname, qval in pairs(route.query) do
-							local qvalexpected = expected[qname]
-							if qval ~= qvalexpected then
-								print("no match params")
-							end
+						if compare_routes(route, expected) == false then
+							ok = false
 						end
 					end
 
@@ -75,8 +82,10 @@ function testcase_results()
 			  .. string.char(27) .. "[0m]"
 		end
 
-		print(result, testresult.testcase_name)
+		print(result .. '  ' .. testresult.testcase_name)
 	end
+
+	_ALL_TESTCASES = {}
 end
 
 -- Actual Tests --
@@ -160,5 +169,6 @@ testcase "basic route parsing"
 		html_route_parse("/foo/bar"),
 		html_route_parse("/foo/bar/"),
 	}
+
 testcase_results()
 

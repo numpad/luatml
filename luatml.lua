@@ -19,6 +19,8 @@ end
 
 function html_route_parse(uri)
 	return {
+		path = {},
+		query = {}
 	}
 end
 

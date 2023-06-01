@@ -38,26 +38,20 @@ function form_login()
 	}
 end
 
+function loggedin_message()
+	local user = "Chris" -- TODO: get from post data
+	return p {
+		style="color: green;",
+		"Welcome, ", user, "!"
+	}
+end
+
 local var = "foo bar baz"
 local var2 = 41
 function counter()
 	local ret = var2
 	var2 = var2 + 1
 	return a { ret, href="/post" }
-end
-
-function html_if(exp, html)
-	if exp then return html end
-
-	return ''
-end
-function html_if2(exp)
-	return function(html)
-		-- TODO: lists not working, [1] is quickfix
-		if exp then return html[1] end
-
-		return ''
-	end
 end
 
 page = html {
@@ -73,17 +67,26 @@ page = html {
 				"User data: ", var, ". Wow... nice!"
 			},
 			html_tag"h2" "Types:",
-			321,
-			"text",
-			{7, "ate", 9}, -- TODO: lists not working
+			div {
+				style=[[
+					background-color: tomato; margin: 5px;
+					display: flex; flex-direction: column;
+					]],
+				321,
+				"text",
+				{
+					7,
+					html_tag"i" "ate",
+					9,
+				},
+			},
 			div {
 				"Functions?",
 				ul {
 					li { "41..", counter },
 					li { "42..", counter },
-					html_if(math.random() < 0.5,
-						li { "43..", counter } ),
-					html_if2(math.random() < 0.5) {
+					html_if(math.random() < 0.5) {
+						li { "43..", counter },
 						li { "44..", counter },
 					},
 					li { "45..", counter },
@@ -95,8 +98,8 @@ page = html {
 				]],
 				form_login,
 				ul {
-					li { "uri: " .. html_request().uri },
-					li { "method: " .. html_request().method },
+					li { "uri: " .. tostring(html_request().uri) },
+					li { "method: " .. tostring(html_request().method) },
 					li { io.read() },
 				},
 			},

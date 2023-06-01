@@ -5,6 +5,29 @@ function html_tag(name)
 	end
 end
 
+-- helpers
+
+function html_if(exp)
+	return function(html)
+		if exp then return html end
+
+		return ''
+	end
+end
+
+-- router
+
+function html_route_parse(uri)
+	return {
+	}
+end
+
+function html_router(request, routes)
+	
+end
+
+-- api
+
 function html_registertags(tags)
 	for i, name in ipairs(tags) do
 		_G[name] = html_tag(name)
@@ -82,7 +105,16 @@ function html_tostring(html)
 		return string.format("%g", html)
 	elseif type(html) == 'function' then
 		return html_tostring(html())
-	elseif type(html) == 'table' then
+	elseif type(html) == 'table' and html.tag == nil then
+		-- this is a normal array
+		result = ''
+		for index, v in ipairs(html) do
+			result = result .. html_tostring(v)
+		end
+		return result
+	elseif type(html) == 'table' and type(html.tag) == 'string' then
+		-- this is a html tag
+
 		-- attributes
 		local attrs = ''
 		if type(html.data) == 'table' then

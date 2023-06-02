@@ -36,6 +36,15 @@ function html_registertags(tags)
 	end
 end
 
+function html_registerdefaulttags()
+	html_registertags({
+		"html", "head", "title", "body",
+		"div", "p", "span", "h1", "ul",
+		"li", "a", "form", "input",
+		"meta", "style", "button", "b",
+	})
+end
+
 function html_response(header, body)
 	response = ''
 

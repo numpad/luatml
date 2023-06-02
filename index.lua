@@ -1,122 +1,58 @@
 #!/usr/bin/env luajit
 
 require 'luatml'
-math.randomseed(os.time())
+html_registerdefaulttags()
+req = html_request()
 
-html_registertags({
-	"html", "head", "title", "body",
-	"div", "p", "span", "h1", "ul",
-	"li", "a", "form", "input",
-	"meta", "style",
-})
-
-function form_login()
-	return form {
-		method="POST",
-		--action="/auth/login",
-		style="display: flex; flex-direction: column; row-gap: 4px;",
-		input {
-			type="text",
-			placeholder="Username",
-			name="username",
-		},
-		input {
-			type="password",
-			placeholder="Password",
-			name="password",
-		},
-		input {
-			type="submit",
-			name="submit",
-			value="Login",
-		},
-		html_tag"button" {
-			type="button", -- stupid html. without this it would default as a submit button.
-			onclick="onValidateInputs();",
-			"Validate Input",
-		},
-	}
-end
-
-function loggedin_message()
-	local user = "Chris" -- TODO: get from post data
-	return p {
-		style="color: green;",
-		"Welcome, ", user, "!"
-	}
-end
-
-local var = "foo bar baz"
-local var2 = 41
-function counter()
-	local ret = var2
-	var2 = var2 + 1
-	return a { ret, href="/post" }
-end
-
-page = html {
-	head {
-		title "Page",
+function el_head()
+	return head {
+		title "text",
 		meta { charset="utf-8" },
 		meta { name="viewport", content="width=device-width, initial-scale=1" },
-	},
-	body {
-		div {
-			class="my-class",
-			p {
-				"User data: ", var, ". Wow... nice!"
-			},
-			html_tag"h2" "Types:",
-			div {
-				style=[[
-					background-color: tomato; margin: 5px;
-					display: flex; flex-direction: column;
-					]],
-				321,
-				"text",
-				{
-					7,
-					html_tag"i" "ate",
-					9,
-				},
-			},
-			div {
-				"Functions?",
-				ul {
-					li { "41..", counter },
-					li { "42..", counter },
-					html_if(math.random() < 0.5) {
-						li { "43..", counter },
-						li { "44..", counter },
-					},
-					li { "45..", counter },
-				}
-			},
-			div {
-				html_tag"script" [[
-					document.write('Current Time:' + new Date())
-				]],
-				form_login,
-				ul {
-					li { "uri: " .. tostring(html_request().uri) },
-					li { "method: " .. tostring(html_request().method) },
-					li { io.read() },
-				},
-			},
-		},
-		html_tag"script" [[
-			function onValidateInputs() {
-				let name = 'Chris';
-				alert('Hi, my name is ' + name);
+		html_tag"script" { src="https://unpkg.com/htmx.org@1.9.2" },
+		style [[
+			body {
+				background-color: white;
+				display: flex;
+				justify-content: center;
+				align-items: center;
 			}
-		]]
+		]],
 	}
-}
-var = 18
+end
 
-if os.getenv('REQUEST_METHOD') == 'POST' then
-	print(html_response(html_header_redirect("/test")))
+function el_page()
+	return html {
+		el_head,
+		body {
+			style="display: flex; flex-direction: column;",
+			div {
+				a {
+					href="/cgi-bin/index.lua",
+					"→ see demo",
+				},
+			},
+			div {
+				["hx-target"] = "this",
+				["hx-swap"] = "outerHTML",
+				style="display: flex; flex-direction: column;",
+				span "new text...",
+				html_tag"textarea" { placeholder="enter something..." },
+				button {
+					["hx-put"] = "/cgi-bin/index.lua",
+					"Save",
+				},
+			},
+		}
+	}
+end
+
+
+if req.method == 'POST' then
+	-- print(html_response(html_header_redirect("/cgi-bin/demo.lua")))
+elseif req.method == 'PUT' then
+	print(html_response(html_header_html(), b"Hello World" ))
 else
-	print(html_response(html_header_html(), page))
+	print(html_response(html_header_html(), el_page()))
 end
 

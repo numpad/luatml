@@ -28,7 +28,7 @@ function el_page()
 			style="display: flex; flex-direction: column;",
 			div {
 				a {
-					href="/cgi-bin/index.lua",
+					href="/cgi-bin/demo.lua",
 					"→ see demo",
 				},
 			},
@@ -37,7 +37,7 @@ function el_page()
 				["hx-swap"] = "outerHTML",
 				style="display: flex; flex-direction: column;",
 				span "new text...",
-				html_tag"textarea" { placeholder="enter something..." },
+				html_tag"textarea" { placeholder="enter something...", rows=8 },
 				button {
 					["hx-put"] = "/cgi-bin/index.lua",
 					"Save",

@@ -87,6 +87,7 @@ function html_request()
 		remoteip    = os.getenv('REMOTE_ADDR'),
 		remoteport  = os.getenv('REMOTE_PORT'),
 		protocol    = os.getenv('SERVER_PROTOCOL'),
+		body        = io.read(),
 	}
 end
 

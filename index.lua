@@ -37,7 +37,7 @@ function el_page()
 				["hx-swap"] = "outerHTML",
 				style="display: flex; flex-direction: column;",
 				span "new text...",
-				html_tag"textarea" { placeholder="enter something..." },
+				html_tag"textarea" { placeholder="..." },
 				button {
 					["hx-put"] = "/cgi-bin/index.lua",
 					"Save",
@@ -49,9 +49,9 @@ end
 
 
 if req.method == 'POST' then
-	-- print(html_response(html_header_redirect("/cgi-bin/demo.lua")))
+	print(html_response(html_header_redirect("/cgi-bin/demo.lua")))
 elseif req.method == 'PUT' then
-	print(html_response(html_header_html(), b"Hello World" ))
+	print(html_response(html_header_html(), b {req.body} ))
 else
 	print(html_response(html_header_html(), el_page()))
 end

@@ -4,6 +4,17 @@ require 'luatml'
 html_registerdefaulttags()
 req = html_request()
 
+html_router(request, {
+	_ = el_page,
+	login = { GET=el_loginform, POST=do_login },
+	api = {
+		workouts = {
+			_ = el_allworkouts,
+			["<id>"] = el_workout, -- TODO: pass id through request?
+		},
+	},
+})
+
 function el_head()
 	return head {
 		title "text",
@@ -66,7 +77,6 @@ function el_page()
 		}
 	}
 end
-
 
 if req.method == 'POST' then
 	print(html_response(html_header_redirect("/cgi-bin/demo.lua")))

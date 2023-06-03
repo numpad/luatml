@@ -12,12 +12,32 @@ function el_head()
 		html_tag"script" { src="https://unpkg.com/htmx.org@1.9.2" },
 		style [[
 			body {
-				background-color: white;
+				background-color: lightsteelblue;
 				display: flex;
 				justify-content: center;
 				align-items: center;
 			}
 		]],
+	}
+end
+
+function el_loginform()
+	return form {
+		style="display: flex; flex-direction: column;",
+		input {
+			name="username",
+			type"text",
+			placeholder="Username",
+		},
+		input {
+			name="password",
+			type"password",
+			placeholder="Password",
+		},
+		button {
+			["hx-post"] = "/auth.lua",
+			"Login",
+		},
 	}
 end
 
@@ -32,12 +52,12 @@ function el_page()
 					"→ see demo",
 				},
 			},
-			div {
+			form {
 				["hx-target"] = "this",
 				["hx-swap"] = "outerHTML",
 				style="display: flex; flex-direction: column;",
 				span "new text...",
-				html_tag"textarea" { placeholder="enter something...", rows=8 },
+				html_tag"textarea" { name="text", placeholder="enter something...", rows=8 },
 				button {
 					["hx-put"] = "/cgi-bin/index.lua",
 					"Save",

@@ -55,6 +55,18 @@ function testcase(name)
 						local expected = value[i]
 
 						if compare_routes(route, expected) == false then
+							print("route mismatch! have:")
+							for i, v in ipairs(route.path) do
+								io.write(v)
+							end
+							print()
+							print("expected:")
+							for i, v in ipairs(expected.path) do
+								io.write(v)
+							end
+							print()
+
+							print(expected.query)
 							ok = false
 						end
 					end

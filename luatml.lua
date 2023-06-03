@@ -15,13 +15,39 @@ function html_if(exp)
 	end
 end
 
+function html_ifelse(exp)
+	return function(html)
+		return function(htmlelse)
+			if exp then return html end
+
+			return htmlelse
+		end
+	end
+end
+
 -- router
 
 function html_route_parse(uri)
-	return {
-		path = {},
-		query = {}
-	}
+    local parsedUri = {}
+    local path, query = uri:match("([^?]*)%??(.*)")
+
+    -- Parse the path
+    parsedUri.path = {}
+	if path ~= nil then
+		for segment in path:gmatch("[^/]+") do
+			table.insert(parsedUri.path, segment)
+		end
+	end
+
+    -- Parse the query parameters
+	parsedUri.query = {}
+	if query ~= nil then
+		for key, value in query:gmatch("([^=&]+)=([^=&]*)") do
+			parsedUri.query[key] = tonumber(value) or value
+		end
+	end
+
+    return parsedUri
 end
 
 function html_router(request, routes)
@@ -82,7 +108,7 @@ function html_request()
 		contenttype = os.getenv('CONTENT_TYPE'),
 		query       = os.getenv('QUERY_STRING'),
 		uri         = os.getenv('REQUEST_URI'),
-		cookies     = os.getenv('HTTP_COOKIE'),
+		cookie      = os.getenv('HTTP_COOKIE'),
 		useragent   = os.getenv('HTTP_USER_AGENT'),
 		remoteip    = os.getenv('REMOTE_ADDR'),
 		remoteport  = os.getenv('REMOTE_PORT'),

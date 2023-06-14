@@ -98,7 +98,19 @@ page = html {
 				]],
 				form_login,
 				ul {
-					li { "uri: " .. tostring(html_request().uri) },
+					li { "uri: " .. tostring(html_request().path) },
+					li { "query: " .. tostring(html_request().query) },
+					li {
+						"parsed: ",
+						function()
+							local p = html_request().uri.path
+							local r = ""
+							for i, v in ipairs(p) do
+								r = r .. v .. (i ~= #p and " / " or "")
+							end
+							return r
+						end
+					},
 					li { "method: " .. tostring(html_request().method) },
 					li { io.read() },
 				},
@@ -115,8 +127,8 @@ page = html {
 var = 18
 
 if os.getenv('REQUEST_METHOD') == 'POST' then
-	print(html_response(html_header_redirect("/test")))
+	return (html_response(html_header_redirect("/test")))
 else
-	print(html_response(html_header_html(), page))
+	return (html_response(html_header_html(), page))
 end
 

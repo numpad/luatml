@@ -2,18 +2,40 @@
 
 require 'luatml'
 html_registerdefaulttags()
-req = html_request()
+local req = html_request()
 
-html_router(request, {
+local res_body = html_router(req, {
 	_ = el_page,
-	login = { GET=el_loginform, POST=do_login },
+	login = el_loginform,
+	upload = do_upload,
 	api = {
 		workouts = {
 			_ = el_allworkouts,
 			["<id>"] = el_workout, -- TODO: pass id through request?
 		},
-	},
+	}
+	--[[
+	-- QoL: shortcuts for request methods
+	shortcut = { GET=el_page, POST=do_something() }
+	]]
 })
+
+-- helper
+
+function is_loggedin()
+	return false
+end
+
+-- api
+
+function do_upload()
+	return p {
+		"uploaded: ",
+		tostring(request.body),
+	}
+end
+
+-- frontend
 
 function el_head()
 	return head {
@@ -58,30 +80,56 @@ function el_page()
 		body {
 			style="display: flex; flex-direction: column;",
 			div {
+				style="display: flex; justify-content: between;",
 				a {
 					href="/cgi-bin/demo.lua",
 					"→ see demo",
 				},
+				html_ifelse(is_loggedin()) {
+					b"Hi User!"
+				} {
+					a {
+						href="/cgi-bin/auth.lua",
+						"Login"
+					}
+				}
 			},
 			form {
-				["hx-target"] = "this",
-				["hx-swap"] = "outerHTML",
 				style="display: flex; flex-direction: column;",
-				span "new text...",
-				html_tag"textarea" { name="text", placeholder="enter something...", rows=8 },
-				button {
-					["hx-put"] = "/cgi-bin/index.lua",
-					"Save",
+				["hx-encoding"] = "multipart/form-data",
+				["hx-post"] = "/cgi-bin/upload.lua",
+				input {
+					type="file",
+					name="file",
 				},
+				button {
+					"Upload",
+				},
+				html_tag"progress" {
+					value="0",
+					max="100",
+					id="progress",
+				},
+				script [[
+					htmx.on('#form', 'htmx:xhr:progress', function(evt) {
+						htmx.find('#progress').setAttribute('value', evt.detail.loaded/evt.detail.total * 100)
+					});
+				]],
+			},
+			{ res_body },
+			p {
+				"cookie: ", req.cookie
 			},
 		}
 	}
 end
 
-if req.method == 'POST' then
-	print(html_response(html_header_redirect("/cgi-bin/demo.lua")))
-elseif req.method == 'PUT' then
-	print(html_response(html_header_html(), b {req.body} ))
+if req.method == 'PUT' then
+	header = html_header_html()
+	print(html_response(header, b {req.body} ))
+elseif req.method == 'POST' and req.uri.path[#req.uri.path] == "upload.lua" then
+	header = html_header_html()
+	print(html_response(header, b { req.body } ))
 else
 	print(html_response(html_header_html(), el_page()))
 end

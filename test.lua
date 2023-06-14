@@ -15,6 +15,7 @@ function compare_routes(a, b)
 	-- compare query
 	for key, value in pairs(a.query) do
 		if a.query[key] ~= b.query[key] then
+			print(a.query[key] .. "--" .. b.query[key])
 			return false
 		end
 	end
@@ -58,11 +59,25 @@ function testcase(name)
 							print("route mismatch! have:")
 							for i, v in ipairs(route.path) do
 								io.write(v)
+								if i < #route.path then
+									io.write("/")
+								end
+							end
+							io.write(" ")
+							for k, v in pairs(route.query) do
+								io.write(k .. "=" .. v .. " ")
 							end
 							print()
 							print("expected:")
 							for i, v in ipairs(expected.path) do
 								io.write(v)
+								if i < #route.path then
+									io.write("/")
+								end
+							end
+							io.write(" ")
+							for k, v in pairs(expected.query) do
+								io.write(k .. "=" .. v .. " ")
 							end
 							print()
 
@@ -168,6 +183,10 @@ testcase "basic route parsing"
 		{ path = {"foo"}, query = {} },
 		{ path = {"foo", "bar"}, query = {} },
 		{ path = {"foo", "bar"}, query = {} },
+		-- a bit more complex
+		{ path = {"user", "1", "edit"}, query = { name = "chris" } },
+		-- query params
+		{ path = { "path", "to", "site" }, query = { id = 123, key = "info" } },
 	}
 	.from_routes {
 		-- index
@@ -180,6 +199,10 @@ testcase "basic route parsing"
 		html_route_parse("/foo/"),
 		html_route_parse("/foo/bar"),
 		html_route_parse("/foo/bar/"),
+		-- a bit more complex
+		html_route_parse('/user/1/edit?name=chris'),
+		-- query params
+		html_route_parse('/path/to/site?id=123&key=info'),
 	}
 
 testcase_results()

@@ -28,6 +28,10 @@ end
 -- router
 
 function html_route_parse(uri)
+	if type(uri) ~= 'string' then
+		return nil
+	end
+
     local parsedUri = {}
     local path, query = uri:match("([^?]*)%??(.*)")
 
@@ -50,13 +54,38 @@ function html_route_parse(uri)
     return parsedUri
 end
 
-function html_router(request, routes)
+function html_route_match(path, path_index, routes)
+	local dir = path[path_index]
+	if dir == nil then
+		dir = "_"
+	end
+
+	local route = routes[dir]
 	
+	if type(route) == "table" then
+		return html_route_match(path, path_index + 1, route)
+	end
+
+	return route
+end
+
+function html_router(request, routes)
+	if routes == nil then
+		return nil
+	elseif type(routes) ~= 'table' then
+		return nil
+	end
+
+	return html_route_match(request.uri.path, 1, routes)
 end
 
 -- api
 
 function html_registertags(tags)
+	if tags == nil then
+		return html_registerdefaulttags()
+	end
+
 	for i, name in ipairs(tags) do
 		_G[name] = html_tag(name)
 	end
@@ -68,6 +97,7 @@ function html_registerdefaulttags()
 		"div", "p", "span", "h1", "ul",
 		"li", "a", "form", "input",
 		"meta", "style", "button", "b",
+		"script",
 	})
 end
 
@@ -103,16 +133,18 @@ end
 
 -- request data
 function html_request()
+	local request_uri = os.getenv('REQUEST_URI')
 	return {
 		method      = os.getenv('REQUEST_METHOD'),
 		contenttype = os.getenv('CONTENT_TYPE'),
 		query       = os.getenv('QUERY_STRING'),
-		uri         = os.getenv('REQUEST_URI'),
+		path        = request_uri,
 		cookie      = os.getenv('HTTP_COOKIE'),
 		useragent   = os.getenv('HTTP_USER_AGENT'),
 		remoteip    = os.getenv('REMOTE_ADDR'),
 		remoteport  = os.getenv('REMOTE_PORT'),
 		protocol    = os.getenv('SERVER_PROTOCOL'),
+		uri         = html_route_parse(request_uri),
 		body        = io.read(),
 	}
 end

@@ -5,14 +5,29 @@
 #include <lua.h>
 #include <lauxlib.h>
 #include <lualib.h>
+#include <arpa/inet.h>
 
 static lua_State *L;
 
 static enum MHD_Result on_request(void *cls, struct MHD_Connection *connection,
-		const char *url, const char *method, const char *version, const char *upload_data, size_t *upload_data_size, void **ptr) {
+		const char *url, const char *method, const char *version, const char *upload_data, size_t *upload_data_size, void **con_cls) {
 
-	// run script, 
+	// debug log
+	struct sockaddr_in **addr_in = (struct sockaddr_in **)MHD_get_connection_info(connection, MHD_CONNECTION_INFO_CLIENT_ADDRESS);
+	printf("%15s  %s  %-7s  %s\n", inet_ntoa((*addr_in)->sin_addr), version, method, url);
+
+	// prepare script
 	lua_pushvalue(L, -1);
+	// prepare request object
+	lua_newtable(L);
+	lua_pushstring(L, url);
+	lua_setfield(L, -2, "url");
+	lua_pushstring(L, method);
+	lua_setfield(L, -2, "method");
+	lua_pushstring(L, version);
+	lua_setfield(L, -2, "version");
+	lua_setglobal(L, "request");
+
 	if (lua_pcall(L, 0, 1, 0) != LUA_OK) {
 		const char *error = lua_tostring(L, -1);
 		fprintf(stderr, "failed executing script.\n%s\n", error);
@@ -21,17 +36,75 @@ static enum MHD_Result on_request(void *cls, struct MHD_Connection *connection,
 		// return early with http 500 and error message
 	}
 
-	const char *page = luaL_checkstring(L, -1);
-	if (page == NULL) {
-		fprintf(stderr, "return value must be of type string!\n");
+	// create response body
+	int res_status = 200;
+	const char *res_location = NULL;
+	const char *res_body = NULL;
+	if (lua_isstring(L, -1)) {
+		res_body = lua_tostring(L, -1);
+	} else if (lua_istable(L, -1)) {
+		// did we return a `html {...}` tag, or just a table?
+		lua_getfield(L, -1, "tag");
+		const int is_htmltag = lua_isstring(L, -1);
+		lua_pop(L, 1);
 
-		// return error
+		if (is_htmltag) {
+			// convert to string
+			lua_getglobal(L, "html_tostring");
+			lua_rotate(L, -2, 1);
+			if (lua_pcall(L, 1, 1, 0) != LUA_OK) {
+				// error
+			}
+			res_body = lua_tostring(L, -1);
+		} else {
+			// normal response table(?)
+			lua_getfield(L, -1, "status");
+			if (lua_isnumber(L, -1)) {
+				res_status = lua_tointeger(L, -1);
+			}
+			lua_pop(L, 1);
+
+			lua_getfield(L, -1, "location");
+			if (lua_isstring(L, -1)) {
+				res_location = lua_tostring(L, -1);
+			}
+			lua_pop(L, 1);
+
+			// TODO: cookies, content type, ...
+			lua_getfield(L, -1, "body");
+			if (lua_isstring(L, -1)) {
+				res_body = lua_tostring(L, -1);
+			} else if (lua_istable(L, -1)) {
+				// handle html_tag
+				// convert to string
+				lua_getglobal(L, "html_tostring");
+				lua_rotate(L, -2, 1);
+				if (lua_pcall(L, 1, 1, 0) != LUA_OK) {
+					// error
+				}
+				res_body = lua_tostring(L, -1);
+			}
+			lua_pop(L, 1);
+		}
 	}
 
-	struct MHD_Response *response = MHD_create_response_from_buffer(
-			strlen(page), (void*)page, MHD_RESPMEM_PERSISTENT);
-	
-	const int ret = MHD_queue_response(connection, MHD_HTTP_OK, response);
+	if (res_status >= 300 && res_status <= 399 && res_location != NULL) {
+		struct MHD_Response *response = MHD_create_response_from_buffer(0, NULL, MHD_RESPMEM_PERSISTENT);
+		MHD_add_response_header (response, "Location", res_location);
+		const int ret = MHD_queue_response(connection, res_status, response);
+		MHD_destroy_response(response);
+		lua_pop(L, 1);
+		return ret;
+	}
+
+	// could not convert page
+	if (res_body == NULL) {
+		fprintf(stderr, "not a valid ");
+		// return early, error
+	}
+
+	struct MHD_Response *response = MHD_create_response_from_buffer(strlen(res_body), (void*)res_body, MHD_RESPMEM_PERSISTENT);
+	const int ret = MHD_queue_response(connection, res_status, response);
 	MHD_destroy_response(response);
 	lua_pop(L, 1);
 	return ret;
@@ -41,8 +114,9 @@ int main(int argc, char** argv) {
 	if (argc <= 1) {
 		printf(
 			"usage: %s <script>\n"
-			"       -b, --bind  bind to specific address.\n"
-			"       -p, --port  use specified port.\n"
+			"       -b, --bind   bind to specific address.\n"
+			"       -p, --port   use specified port.\n"
+			"       -d, --debug  run in debug mode.\n"
 			, argv[0]);
 		return 1;
 	}
@@ -63,7 +137,9 @@ int main(int argc, char** argv) {
 	struct MHD_Daemon *daemon = MHD_start_daemon(MHD_USE_THREAD_PER_CONNECTION,
 			port, NULL, NULL, &on_request, NULL, MHD_OPTION_END);
 	
+	printf("starting server on :%d...\n", port);
 	getc(stdin);
+	printf("stopping server...\n");
 
 	lua_close(L);
 	MHD_stop_daemon(daemon);

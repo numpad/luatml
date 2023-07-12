@@ -9,8 +9,73 @@
 
 static lua_State *L;
 
+int luatml_loadfile(lua_State *L, const char *path) {
+	// debug only
+	{
+		static const char *last_path = NULL;
+		if (path != NULL) {
+			last_path = path;
+		}
+
+		if (path == NULL) {
+			path = last_path;
+		}
+		printf("path = %s, last = %s\n", path, last_path);
+	}
+
+	if (luaL_loadfile(L, path) != LUA_OK) {
+		const char *error = lua_tostring(L, -1);
+		fprintf(stderr, "could not load file '%s'! error:\n%s\n", path, error);
+		lua_pop(L, 1);
+		return 1;
+	}
+
+	return 0;
+}
+
+int luatml_eval(lua_State *L) {
+	if (lua_pcall(L, 0, 1, 0) != LUA_OK) {
+		const char *error = lua_tostring(L, -1);
+		fprintf(stderr, "failed executing script.\n%s\n", error);
+		lua_pop(L, 1);
+
+		return 1;
+	}
+
+	return 0;
+}
+
+int luatml_tostring(lua_State *L, const char **output) {
+	if (!lua_istable(L, -1)) {
+		return 1;
+	}
+	
+	// did we return a `html {...}` tag, or just a table?
+	lua_getfield(L, -1, "tag");
+	const int is_htmltag = lua_isstring(L, -1);
+	lua_pop(L, 1);
+	if (!is_htmltag) {
+		return 1;
+	}
+
+	// convert to string
+	lua_getglobal(L, "html_tostring");
+	lua_rotate(L, -2, 1);
+	if (lua_pcall(L, 1, 1, 0) != LUA_OK) {
+		return 1;
+	}
+	const char *result = lua_tostring(L, -1);
+	
+	*output = malloc((strlen(result) + 1) * sizeof(char));
+	strncpy(*output, result, strlen(result));
+
+	return 0;
+}
+
 static enum MHD_Result on_request(void *cls, struct MHD_Connection *connection,
 		const char *url, const char *method, const char *version, const char *upload_data, size_t *upload_data_size, void **con_cls) {
+
+	luatml_loadfile(L, NULL);
 
 	// debug log
 	struct sockaddr_in **addr_in = (struct sockaddr_in **)MHD_get_connection_info(connection, MHD_CONNECTION_INFO_CLIENT_ADDRESS);
@@ -28,12 +93,8 @@ static enum MHD_Result on_request(void *cls, struct MHD_Connection *connection,
 	lua_setfield(L, -2, "version");
 	lua_setglobal(L, "request");
 
-	if (lua_pcall(L, 0, 1, 0) != LUA_OK) {
-		const char *error = lua_tostring(L, -1);
-		fprintf(stderr, "failed executing script.\n%s\n", error);
-		lua_pop(L, 1);
-
-		// return early with http 500 and error message
+	if (luatml_eval(L)) {
+		// return HTTP 500
 	}
 
 	// create response body
@@ -49,12 +110,7 @@ static enum MHD_Result on_request(void *cls, struct MHD_Connection *connection,
 		lua_pop(L, 1);
 
 		if (is_htmltag) {
-			// convert to string
-			lua_getglobal(L, "html_tostring");
-			lua_rotate(L, -2, 1);
-			if (lua_pcall(L, 1, 1, 0) != LUA_OK) {
-				// error
-			}
+			luatml_tostring(L, &res_body);
 			res_body = lua_tostring(L, -1);
 		} else {
 			// normal response table(?)
@@ -124,11 +180,8 @@ int main(int argc, char** argv) {
 	// start lua
 	L = luaL_newstate();
 	luaL_openlibs(L);
-
-	if (luaL_loadfile(L, argv[1]) != LUA_OK) {
-		const char *error = lua_tostring(L, -1);
-		fprintf(stderr, "could not load file '%s'! error:\n%s\n", argv[1], error);
-		lua_pop(L, 1);
+	
+	if (luatml_loadfile(L, argv[1])) {
 		return 1;
 	}
 

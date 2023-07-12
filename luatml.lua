@@ -25,6 +25,16 @@ function html_ifelse(exp)
 	end
 end
 
+function html_foreach(table)
+	return function(html)
+		result = {}
+		for item in ipairs(table) do
+			result[#result + 1] = html
+		end
+		return result
+	end
+end
+
 -- router
 
 function html_route_parse(uri)

@@ -25,12 +25,24 @@ function html_ifelse(exp)
 	end
 end
 
-function html_foreach(table)
+function html_foreach(list)
 	return function(html)
-		result = {}
-		for item in ipairs(table) do
-			result[#result + 1] = html
+		local result = {}
+		for i, listitem in ipairs(list) do
+			for j, tag in ipairs(html) do
+				if type(tag) == "function" then
+					-- TODO: deep search, or write "context"
+					--       to html tag. and during _tostring()
+					--       search for "nearest" context for functions.
+					table.insert(result, function ()
+						return tag(listitem, i, list)
+						end)
+				else
+					table.insert(result, tag)
+				end
+			end
 		end
+
 		return result
 	end
 end

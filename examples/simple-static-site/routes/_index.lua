@@ -1,7 +1,8 @@
 require 'luatml'
 html_registertags()
 
-links = {
+
+local links = {
 	"/contact",
 	"/about",
 	"/about/team",
@@ -20,8 +21,11 @@ return html {
 		]],
 	},
 	body {
+		require 'examples/simple-static-site/components/navbar',
 		h1 "Simple Static Site",
 		p "This demonstrates how to use `luatml generate`",
+
+		-- list of links, testing for-each variants
 		div {
 			class="cols-2",
 			ul {
@@ -46,6 +50,25 @@ return html {
 					}
 				},
 				li "end",
+			},
+		},
+
+		-- test components
+		div {
+			style="display: flex;",
+			-- component with no argument
+			require 'examples/simple-static-site/components/card',
+			-- component with simple argument:
+			require 'examples/simple-static-site/components/card' "simple text",
+			-- component with complex content
+			require 'examples/simple-static-site/components/card' {
+				a {
+					"some link",
+					href="#",
+				},
+				span {
+					"(visit now)",
+				},
 			},
 		},
 	},

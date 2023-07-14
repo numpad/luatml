@@ -3,25 +3,28 @@
 a simple lua static html generator.
 
 
+for a quick introduction, head over to the [quickstart](#quickstart) section!
+
+
 ## rationale
 
-for most of my use-cases the web development tools i encountered are not pleasant to use
+for most of my use-cases the web development tools i encountered are not pleasant to work with
 and turn web development into a surprisingly burdensome task that requires me to spend
 more time learning and fighting the tools rather than focussing on the content itself.
 that i perceive as time wasted.
 
 
-## what is this
+## what is `luatml`
 
-[luatml](https://github.com/numpad/luatml) is:
- - *a lua library*, to write 
- - a cli tool
- - and a small set of guidelines to write 
+[luatml](https://github.com/numpad/luatml) is...
+ - a *lua library* and domain-specific language to write html, with handy utility functions.
+ - a *cli tool* to translate this "lua-html" to static html.
+ - and a small set of *guidelines, recommendations and examples* 
 
 
-## example
+## quickstart
 
-the 
+
 
 ```lua
 require 'luatml'

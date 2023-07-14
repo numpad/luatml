@@ -28,13 +28,15 @@ there are [a few ways](#features) to use `luatml`, all of them boil down to the 
 
  1. download and compile[1] the luatml cli program
 
+```bash
     $ git clone https://github.com/numpad/luatml.git
     $ cd luatml/
     $ make
+```
 
- 2. create a new lua file `helloworld.lua` and copy the code below.
- 3. translate the file to html and save it: `./luatml build helloworld.lua > index.html`.
- 4. view the `index.html` in a browser.
+ 3. create a new lua file `helloworld.lua` and copy the code below.
+ 4. translate the file to html and save it: `./luatml build helloworld.lua > index.html`.
+ 5. view the `index.html` in a browser.
 
     [1]: compiling luatml requires a C99 compliant compiler and lua.
 
@@ -75,9 +77,9 @@ return html {
 
 | HTML                              | luatml translation                   |
 |-----------------------------------|--------------------------------------|
-| `<p>Hello World</p>`{:.html}      | `p "Hello World"`{:.lua}, `p("Hello World")`{:.lua} or `p { "Hello World" }`{:.lua} |
-| `<p style="color: red;">Hello World</p>`{:.html} | `p { "Hello World", style="color: red;" }`{:.lua} |
-| `<button hx-post="/clicked">Click me</button>`{:.html} | `button { "Click me", ["hx-post"]="/clicked" }`{:.lua} |
-| `<ul><li>first</li><li>second</li></ul>`{:.html} | `ul { li "first", li "second" }`{:.lua} |
-| `<MyCustomTag></MyCustomTag>`{:.html} | `luatml_tag"MyCustomTag" {}`{:.lua} |
+| `<p>Hello World</p>`      | `p "Hello World"`, `p("Hello World")` or `p { "Hello World" }` |
+| `<p style="color: red;">Hello World</p>` | `p { "Hello World", style="color: red;" }` |
+| `<button hx-post="/clicked">Click me</button>` | `button { "Click me", ["hx-post"]="/clicked" }` |
+| `<ul><li>first</li><li>second</li></ul>` | `ul { li "first", li "second" }` |
+| `<MyCustomTag></MyCustomTag>` | `luatml_tag"MyCustomTag" {}` |
 

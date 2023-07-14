@@ -1,11 +1,27 @@
 # luatml
 
-a simple & minimalistic lua web framework.
+a simple lua static html generator.
+
+
+## rationale
+
+for most of my use-cases the web development tools i encountered are not pleasant to use
+and turn web development into a surprisingly burdensome task that requires me to spend
+more time learning and fighting the tools rather than focussing on the content itself.
+that i perceive as time wasted.
+
+
+## what is this
+
+[luatml](https://github.com/numpad/luatml) is:
+ - *a lua library*, to write 
+ - a cli tool
+ - and a small set of guidelines to write 
+
 
 ## example
 
-the following example demonstrates responding with
-a very basic web page.
+the 
 
 ```lua
 require 'luatml'

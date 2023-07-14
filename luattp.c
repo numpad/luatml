@@ -10,8 +10,7 @@
 static lua_State *L;
 
 int luatml_loadfile(lua_State *L, const char *path) {
-	// debug only
-	{
+	{ // debug only
 		static const char *last_path = NULL;
 		if (path != NULL) {
 			last_path = path;
@@ -21,6 +20,8 @@ int luatml_loadfile(lua_State *L, const char *path) {
 			path = last_path;
 		}
 		printf("path = %s, last = %s\n", path, last_path);
+
+		// TODO: also set our "libs"/"components" in `package.loaded` to nil so we trigger a reload in debug
 	}
 
 	if (luaL_loadfile(L, path) != LUA_OK) {

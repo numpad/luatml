@@ -55,13 +55,14 @@ return html {
 
 		-- test components
 		div {
-			style="display: flex;",
+			style="display: flex; gap: 1em;",
 			-- component with no argument
 			require 'examples/simple-static-site/components/card',
 			-- component with simple argument:
 			require 'examples/simple-static-site/components/card' "simple text",
 			-- component with complex content
 			require 'examples/simple-static-site/components/card' {
+				style="color: blue;",
 				a {
 					"some link",
 					href="#",

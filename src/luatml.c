@@ -9,6 +9,11 @@
 
 LUATML_RESULT_TYPE luatml_init(luatml_ctx *ctx) {
 	ctx->L = luaL_newstate();
+	if (ctx->L == NULL) {
+		fprintf(stderr, "luatml: failed to initialize lua state.\n");
+		return LUATML_RESULT_ERROR;
+	}
+
 	luaL_openlibs(ctx->L);
 	ctx->last_filepath = NULL;
 
@@ -16,6 +21,10 @@ LUATML_RESULT_TYPE luatml_init(luatml_ctx *ctx) {
 }
 
 LUATML_RESULT_TYPE luatml_destroy(luatml_ctx *ctx) {
+	if (ctx == NULL) {
+		return LUATML_RESULT_ERROR;
+	}
+
 	lua_close(ctx->L);
 	ctx->L = NULL;
 	ctx->last_filepath = NULL;
@@ -61,14 +70,16 @@ LUATML_RESULT_TYPE luatml_tohtml(luatml_ctx *ctx, char **output) {
 	}
 
 	// convert to string
-	lua_getglobal(ctx->L, "html_tostring");
-	lua_rotate(ctx->L, -2, 1);
+	lua_getglobal(ctx->L, "html_tostring"); // TODO: implement this in c
+	lua_rotate(ctx->L, -2, 1); // TODO: only lua5.3+, we are targeting 5.1...
 	if (lua_pcall(ctx->L, 1, 1, 0) != LUA_OK) {
 		return LUATML_RESULT_ERROR;
 	}
 	const char *result = lua_tostring(ctx->L, -1);
 	
-	*output = malloc((strlen(result) + 1) * sizeof(char));
+	const int result_len = strlen(result);
+	*output = malloc((result_len + 1) * sizeof(char));
+	(*output)[result_len] = '\0';
 	strncpy(*output, result, strlen(result));
 
 	return LUATML_RESULT_OK;

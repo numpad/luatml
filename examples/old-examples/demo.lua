@@ -1,5 +1,3 @@
-#!/usr/bin/env luajit
-
 require 'luatml'
 math.randomseed(os.time())
 
@@ -94,25 +92,31 @@ page = html {
 			},
 			div {
 				html_tag"script" [[
-					document.write('Current Time:' + new Date())
+					document.write('Current Browser Time:' + new Date())
 				]],
+				p {
+					'Time of build: ' .. os.date(),
+				},
 				form_login,
 				ul {
-					li { "uri: " .. tostring(html_request().path) },
-					li { "query: " .. tostring(html_request().query) },
 					li {
 						"parsed: ",
 						function()
-							local p = html_request().uri.path
+							local p = {'no', 'longer', 'makes', 'sense'}
 							local r = ""
 							for i, v in ipairs(p) do
 								r = r .. v .. (i ~= #p and " / " or "")
 							end
 							return r
-						end
+						end,
+						html_foreach{"path", "to", "file"} {
+							function (item, i, list)
+								return li { item, i, list }
+							end,
+							li { "nice" },
+						},
 					},
-					li { "method: " .. tostring(html_request().method) },
-					li { io.read() },
+					li { "method: " .. '- no longer makes sense -' },
 				},
 			},
 		},
@@ -126,9 +130,5 @@ page = html {
 }
 var = 18
 
-if os.getenv('REQUEST_METHOD') == 'POST' then
-	return (html_response(html_header_redirect("/test")))
-else
-	return (html_response(html_header_html(), page))
-end
+return page
 

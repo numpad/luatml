@@ -9,21 +9,11 @@ local links = {
 }
 
 return html {
-	head {
-		meta { charset="utf-8" },
-		meta { name="viewport", content="width=device-width, initial-scale=1.0" },
-		title "My Website",
-		style [[
-			.cols-2 {
-				display: flex;
-				justify-content: space-evenly;
-			}
-		]],
-	},
+	require 'examples/simple-static-site/components/head',
 	body {
 		require 'examples/simple-static-site/components/navbar',
 		h1 "Simple Static Site",
-		p "This demonstrates how to use `luatml generate`",
+		p "This demonstrates how to use `luatml build`",
 
 		-- list of links, testing for-each variants
 		div {

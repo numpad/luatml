@@ -7,6 +7,7 @@ end
 
 -- helpers
 
+-- luatml_if(is_debug_enabled) { button "Show secrets" }
 function html_if(exp)
 	return function(html)
 		if exp then return html end
@@ -15,6 +16,7 @@ function html_if(exp)
 	end
 end
 
+-- luatml_ifelse(is_debug_enabled) { p "Using dev db" } { p "Using prod db" }
 function html_ifelse(exp)
 	return function(html)
 		return function(htmlelse)
@@ -25,6 +27,7 @@ function html_ifelse(exp)
 	end
 end
 
+-- luatml_foreach{"Foo", "Bar", "Baz"} { p "Found:", function(item, i, list) return p { item .. " at " .. i } end }
 function html_foreach(list)
 	return function(html)
 		local result = {}
@@ -115,11 +118,13 @@ end
 
 function html_registerdefaulttags()
 	html_registertags({
-		"html", "head", "title", "body",
-		"div", "p", "span", "h1", "ul",
-		"li", "a", "form", "input",
-		"meta", "style", "button", "b",
-		"script",
+		"html",
+		"head", "title", "meta", "style", "script",
+		"body",
+		"div", "img",
+		"p", "span", "b", "i", "h1", "h2", "h3", "h4", "h5",
+		"ul", "ol", "li", "a",
+		"form", "input", "button",
 	})
 end
 

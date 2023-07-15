@@ -1,41 +1,9 @@
-#!/usr/bin/env luajit
-
 require 'luatml'
-html_registerdefaulttags()
-local req = html_request()
-
-local res_body = html_router(req, {
-	_ = el_page,
-	login = el_loginform,
-	upload = do_upload,
-	api = {
-		workouts = {
-			_ = el_allworkouts,
-			["<id>"] = el_workout, -- TODO: pass id through request?
-		},
-	}
-	--[[
-	-- QoL: shortcuts for request methods
-	shortcut = { GET=el_page, POST=do_something() }
-	]]
-})
-
--- helper
+html_registertags()
 
 function is_loggedin()
 	return false
 end
-
--- api
-
-function do_upload()
-	return p {
-		"uploaded: ",
-		tostring(request.body),
-	}
-end
-
--- frontend
 
 function el_head()
 	return head {
@@ -117,20 +85,9 @@ function el_page()
 				]],
 			},
 			{ res_body },
-			p {
-				"cookie: ", req.cookie
-			},
 		}
 	}
 end
 
-if req.method == 'PUT' then
-	header = html_header_html()
-	print(html_response(header, b {req.body} ))
-elseif req.method == 'POST' and req.uri.path[#req.uri.path] == "upload.lua" then
-	header = html_header_html()
-	print(html_response(header, b { req.body } ))
-else
-	print(html_response(html_header_html(), el_page()))
-end
+return el_page()
 

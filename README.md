@@ -16,9 +16,9 @@ that i perceive as time wasted.
 
 ## what is `luatml`
 
- - a **lua library** and domain-specific language to write html, with handy utility functions.
- - a **cli tool** to translate this "lua-html" to static html.
- - and a small set of **guidelines, recommendations and examples**.
+ - a *lua library* and domain-specific language to write html, with handy utility functions.
+ - a *cli tool* to translate this "lua-html" to static html.
+ - and a small set of *guidelines, recommendations and examples* 
 
 
 ## quickstart
@@ -29,9 +29,9 @@ there are [a few ways](#features) to use `luatml`, all of them boil down to the 
  1. download and compile[1] the luatml cli program
 
 ```bash
-    $ git clone https://github.com/numpad/luatml.git
-    $ cd luatml/
-    $ make
+$ git clone https://github.com/numpad/luatml.git
+$ cd luatml/
+$ make
 ```
 
  3. create a new lua file `helloworld.lua` and copy the code below.
@@ -66,9 +66,6 @@ return html {
 }
 
 ```
-
-
-## features
 
 
 ## syntax

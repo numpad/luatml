@@ -39,6 +39,7 @@ LUATML_RESULT_TYPE luatmlfs_iterator_init(luatmlfs_iterator *it, const char *bas
 	}
 
 	it->path = malloc(strlen(basepath) + 1);
+	it->mask = LUATMLFS_FILE | LUATMLFS_DIRECTORY;
 	strcpy(it->path, basepath);
 	it->_dir = opendir(basepath);
 	it->sub_iter = NULL;
@@ -80,12 +81,22 @@ char* luatmlfs_next(luatmlfs_iterator *it) {
 		enum LUATMLFS_ENTRY_TYPE ftype = luatmlfs_entrytype(fullpath);
 		switch (ftype) {
 		case LUATMLFS_FILE:
-			return fullpath;
+			if (it->mask & LUATMLFS_FILE) {
+				return fullpath;
+			} else {
+				free(fullpath);
+				continue;
+			}
 		case LUATMLFS_DIRECTORY: {
 			luatmlfs_iterator *sub_iter = malloc(sizeof(luatmlfs_iterator));
 			luatmlfs_iterator_init(sub_iter, fullpath);
+			sub_iter->mask = it->mask; // TODO: needed? maybe add luatmlfs_iterator_copy() or similar
 			iterator->sub_iter = sub_iter;
-			return luatmlfs_next(sub_iter);
+			if (it->mask & LUATMLFS_DIRECTORY) {
+				return fullpath;
+			} else {
+				return luatmlfs_next(sub_iter);
+			}
 		}
 		case LUATMLFS_UNKNOWN:
 			fprintf(stderr, "encountered unkown file type at: %s\n", fullpath);
@@ -101,6 +112,13 @@ char* luatmlfs_next(luatmlfs_iterator *it) {
 	}
 
 	return NULL;
+}
+
+LUATML_RESULT_TYPE luatmlfs_mkdir(const char *path) {
+	if (mkdir(path, 0755) != 0) {
+		return LUATML_RESULT_ERROR;
+	}
+	return LUATML_RESULT_OK;
 }
 
 #elif _WIN32

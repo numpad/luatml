@@ -71,7 +71,9 @@ LUATML_RESULT_TYPE luatml_tohtml(luatml_ctx *ctx, char **output) {
 
 	// convert to string
 	lua_getglobal(ctx->L, "html_tostring"); // TODO: implement this in c
-	lua_rotate(ctx->L, -2, 1); // TODO: only lua5.3+, we are targeting 5.1...
+	//lua_rotate(ctx->L, -2, 1); // only lua5.3+, we are targeting 5.1...
+	lua_replace(ctx->L, -3); // TODO: not really tested
+
 	if (lua_pcall(ctx->L, 1, 1, 0) != LUA_OK) {
 		return LUATML_RESULT_ERROR;
 	}

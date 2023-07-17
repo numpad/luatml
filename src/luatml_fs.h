@@ -11,6 +11,7 @@ enum LUATMLFS_ENTRY_TYPE {
 
 typedef struct luatmlfs_iterator_s {
 	char *path;
+	enum LUATMLFS_ENTRY_TYPE mask; // include these entry types
 
 	void *_dir; // meh... crossplatform dies das :)
 	struct luatmlfs_iterator_s *sub_iter;
@@ -22,6 +23,8 @@ char* luatmlfs_next(luatmlfs_iterator *it);
 
 int luatmlfs_isfile(const char *path);
 int luatmlfs_isdirectory(const char *path);
+
+LUATML_RESULT_TYPE luatmlfs_mkdir(const char *path);
 
 #endif
 

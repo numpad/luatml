@@ -1,6 +1,7 @@
 #include "luatml_build.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include "luatml.h"
 #include "luatml_fs.h"
 
@@ -25,7 +26,20 @@ static LUATML_RESULT_TYPE build_file(luatml_ctx *ctx, const char *path) {
 
 static LUATML_RESULT_TYPE build_dir(luatml_ctx *ctx, const char *path) {
 	(void)ctx;
-	fprintf(stderr, "luatml-build: directories not supported yet. will not build \"%s\"...\n", path);
+	fprintf(stderr, "luatml-build: building directory \"%s\"...\n", path);
+
+	luatmlfs_iterator it;
+	luatmlfs_iterator_init(&it, path);
+
+	char *currentpath;
+	while ((currentpath = luatmlfs_next(&it)) != NULL) {
+		printf(" * %s\n", currentpath);
+
+		free(currentpath);
+	}
+
+	luatmlfs_iterator_destroy(&it);
+
 	return LUATML_RESULT_ERROR;
 }
 

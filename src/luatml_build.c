@@ -39,8 +39,6 @@ static LUATML_RESULT_TYPE build_file(luatml_ctx *ctx, const char *path, const ch
 }
 
 static LUATML_RESULT_TYPE build_dir(luatml_ctx *ctx, const char *path, const char *output_path) {
-	fprintf(stderr, "luatml-build: building directory \"%s\"...\n", path);
-
 	if (output_path == NULL || !luatmlfs_isdirectory(output_path)) {
 		fprintf(stderr, "luatml-build: not a valid output path\n");
 		return LUATML_RESULT_ERROR;
@@ -80,17 +78,27 @@ static LUATML_RESULT_TYPE build_dir(luatml_ctx *ctx, const char *path, const cha
 
 		char *currentpath;
 		while ((currentpath = luatmlfs_next(&it)) != NULL) {
-			const int dotlua_len = strlen(strrchr(currentpath, '.'));
-			const int dothtml_len = strlen(".html");
+			const char *extension = strrchr(currentpath, '.');
+			const char *newextension = extension;
+			if (strcmp(extension, ".lua") == 0) {
+				newextension = ".html";
+			}
+
+			const int dotext_len = strlen(extension);
+			const int dothtml_len = strlen(newextension);
+			const char *relativepath = currentpath + strlen(path);
 			// TODO: rework this...
-			char filepath[strlen(output_path) + 1 + strlen(currentpath + strlen(path) + 1 - dotlua_len + dothtml_len)];
+			char filepath[strlen(output_path) + 1 + strlen(relativepath + 1 - dotext_len + dothtml_len)];
 			filepath[0] = '\0';
 			sprintf(filepath, "%s/", output_path);
-			snprintf(filepath + strlen(filepath), strlen(currentpath + strlen(path) + 0) - dotlua_len, "%s", currentpath + strlen(path) + 1);
-			strcat(filepath, ".html");
+			snprintf(filepath + strlen(filepath), strlen(relativepath + 0) - dotext_len, "%s", relativepath + 1);
+			strcat(filepath, newextension);
 
-			fprintf(stderr, "%s -> %s\n", currentpath, filepath);
-			build_file(ctx, currentpath, filepath);
+			fprintf(stderr, "%s -> %s\n", relativepath + 1, filepath); // instead of relativepath we could to currentpath
+
+			if (strcmp(extension, ".lua") == 0) {
+				build_file(ctx, currentpath, filepath);
+			}
 
 			free(currentpath);
 		}

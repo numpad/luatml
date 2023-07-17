@@ -11,7 +11,6 @@
 
 typedef struct luatml_ctx_s {
 	lua_State *L;
-	const char *last_filepath;
 } luatml_ctx;
 
 LUATML_RESULT_TYPE luatml_init(luatml_ctx *ctx);

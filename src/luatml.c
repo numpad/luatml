@@ -15,7 +15,6 @@ LUATML_RESULT_TYPE luatml_init(luatml_ctx *ctx) {
 	}
 
 	luaL_openlibs(ctx->L);
-	ctx->last_filepath = NULL;
 
 	return LUATML_RESULT_OK;
 }
@@ -27,7 +26,6 @@ LUATML_RESULT_TYPE luatml_destroy(luatml_ctx *ctx) {
 
 	lua_close(ctx->L);
 	ctx->L = NULL;
-	ctx->last_filepath = NULL;
 
 	return LUATML_RESULT_OK;
 }
@@ -39,8 +37,6 @@ LUATML_RESULT_TYPE luatml_loadfile(luatml_ctx *ctx, const char *path) {
 		lua_pop(ctx->L, 1);
 		return LUATML_RESULT_ERROR;
 	}
-
-	ctx->last_filepath = path;
 
 	return LUATML_RESULT_OK;
 }

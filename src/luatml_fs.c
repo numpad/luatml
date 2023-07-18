@@ -121,6 +121,31 @@ LUATML_RESULT_TYPE luatmlfs_mkdir(const char *path) {
 	return LUATML_RESULT_OK;
 }
 
+LUATML_RESULT_TYPE luatmlfs_copyfile(const char *path_src, const char *path_dest) {
+	FILE *src = fopen(path_src, "rb");
+	if (src == NULL) {
+		return LUATML_RESULT_ERROR;
+	}
+
+	FILE *dest = fopen(path_dest, "w+b");
+	if (dest == NULL) {
+		fclose(src);
+		return LUATML_RESULT_ERROR;
+	}
+
+	const int BLOCK_SIZE = 4096;
+	char block[BLOCK_SIZE];
+	size_t read_count = 0;
+	while ((read_count = fread(block, sizeof(char), BLOCK_SIZE, src)) > 0) {
+		fwrite(block, sizeof(char), read_count, dest);
+	}
+
+	fclose(src);
+	fclose(dest);
+
+	return LUATML_RESULT_OK;
+}
+
 #elif _WIN32
 #error "WIN32 is not supported yet"
 

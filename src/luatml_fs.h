@@ -25,6 +25,7 @@ int luatmlfs_isfile(const char *path);
 int luatmlfs_isdirectory(const char *path);
 
 LUATML_RESULT_TYPE luatmlfs_mkdir(const char *path);
+LUATML_RESULT_TYPE luatmlfs_copyfile(const char *src, const char *dest);
 
 #endif
 

@@ -98,6 +98,8 @@ static LUATML_RESULT_TYPE build_dir(luatml_ctx *ctx, const char *path, const cha
 
 			if (strcmp(extension, ".lua") == 0) {
 				build_file(ctx, currentpath, filepath);
+			} else {
+				luatmlfs_copyfile(currentpath, filepath);
 			}
 
 			free(currentpath);

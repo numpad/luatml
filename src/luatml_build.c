@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <lua.h>
+#include <lauxlib.h>
 #include "luatml.h"
 #include "luatml_fs.h"
 
@@ -43,6 +45,20 @@ static LUATML_RESULT_TYPE build_dir(luatml_ctx *ctx, const char *path, const cha
 		fprintf(stderr, "luatml-build: not a valid output path\n");
 		return LUATML_RESULT_ERROR;
 	}
+
+	// set `require` lookup directory
+	const char *setpath = "package.path = package.path .. ';%s/?.lua'";
+	char setnewpath[strlen(setpath) + strlen(path) + 1];
+	sprintf(setnewpath, setpath, path);
+
+	luaL_dostring(ctx->L, setnewpath);
+	//lua_getglobal("package");
+	//lua_getfield("path");
+	//const char *prev_path = lua_tostring(ctx->L, -1);
+	//const size_t prev_path_len = strlen(prev_path);
+	//char newpath[prev_path_len + new_path_len + 1];
+	// package.path = package.path .. ';./examples/simple-static-site/?.lua'
+	
 
 	// create directory structure first
 	{

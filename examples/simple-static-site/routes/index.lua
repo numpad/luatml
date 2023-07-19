@@ -9,9 +9,9 @@ local links = {
 }
 
 return html {
-	require 'examples/simple-static-site/components/head',
+	require 'components/head', -- require path is relative to the built directory
 	body {
-		require 'examples/simple-static-site/components/navbar',
+		require 'components/navbar',
 		h1 "Simple Static Site",
 		p "This demonstrates how to use `luatml build`",
 
@@ -47,11 +47,11 @@ return html {
 		div {
 			style="display: flex; gap: 1em;",
 			-- component with no argument
-			require 'examples/simple-static-site/components/card',
+			require 'components/card',
 			-- component with simple argument:
-			require 'examples/simple-static-site/components/card' "simple text",
+			require 'components/card' "simple text",
 			-- component with complex content
-			require 'examples/simple-static-site/components/card' {
+			require 'components/card' {
 				style="color: blue;",
 				a {
 					"some link",

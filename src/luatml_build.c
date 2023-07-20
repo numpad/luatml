@@ -46,19 +46,24 @@ static LUATML_RESULT_TYPE build_dir(luatml_ctx *ctx, const char *path, const cha
 		return LUATML_RESULT_ERROR;
 	}
 
-	// set `require` lookup directory
-	const char *setpath = "package.path = package.path .. ';%s/?.lua'";
-	char setnewpath[strlen(setpath) + strlen(path) + 1];
-	sprintf(setnewpath, setpath, path);
+	// build the string to append to "package.path"
+	const char *path_addition_suffix = "/?.lua";
+	const size_t path_addition_len = 1 + strlen(path) + strlen(path_addition_suffix) + 1;
+	char path_addition[path_addition_len];
+	sprintf(path_addition, ";%s%s", path, path_addition_suffix);
 
-	luaL_dostring(ctx->L, setnewpath);
-	//lua_getglobal("package");
-	//lua_getfield("path");
-	//const char *prev_path = lua_tostring(ctx->L, -1);
-	//const size_t prev_path_len = strlen(prev_path);
-	//char newpath[prev_path_len + new_path_len + 1];
-	// package.path = package.path .. ';./examples/simple-static-site/?.lua'
-	
+	// overwrite existing package path
+	lua_getglobal(ctx->L, "package");
+	lua_getfield(ctx->L, -1, "path");
+	const char *prev_path = lua_tostring(ctx->L, -1);
+	const size_t prev_path_len = strlen(prev_path);
+	const size_t new_path_len = prev_path_len + path_addition_len;
+	char newpath[new_path_len];
+	sprintf(newpath, "%s%s", prev_path, path_addition);
+	lua_pop(ctx->L, 1);
+	lua_pushstring(ctx->L, newpath);
+	lua_setfield(ctx->L, -2, "path");
+	lua_pop(ctx->L, 1);
 
 	// create directory structure first
 	{

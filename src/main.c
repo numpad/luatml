@@ -4,7 +4,7 @@
 #include "luatml_serve.h"
 #include "luatml.h"
 
-void print_help(int argc, char **argv) {
+static void print_help(int argc, char **argv) {
 	(void)argc;
 
 	printf(
@@ -21,8 +21,9 @@ void print_help(int argc, char **argv) {
 
 enum LUATML_COMMAND_TYPE {
 	LUATML_COMMAND_UNKNOWN,
-	LUATML_COMMAND_BUILD,
-	LUATML_COMMAND_SERVE,
+	LUATML_COMMAND_BUILD, // build input luatml file/directory to html
+	LUATML_COMMAND_SERVE, // run a http server to build & serve luatml
+	LUATML_COMMAND_PARSE, // parse html to luatml (experimental)
 };
 
 static enum LUATML_COMMAND_TYPE parse_luatml_command(char *command) {
@@ -34,6 +35,8 @@ static enum LUATML_COMMAND_TYPE parse_luatml_command(char *command) {
 		return LUATML_COMMAND_BUILD;
 	} else if (strcmp(command, "serve") == 0) {
 		return LUATML_COMMAND_SERVE;
+	} else if (strcmp(command, "parse") == 0) {
+		return LUATML_COMMAND_PARSE;
 	}
 
 	return LUATML_COMMAND_UNKNOWN;
@@ -46,16 +49,20 @@ int main(int argc, char **argv) {
 	}
 
 	luatml_ctx ctx;
-	luatml_init(&ctx);
+	luatml_init_with_args(&ctx, argc - 2, argv + 2);
 
 	char *command_str = argv[1];
 	enum LUATML_COMMAND_TYPE command = parse_luatml_command(command_str);
+	int exit_code = 1;
 	switch (command) {
 		case LUATML_COMMAND_BUILD:
-			luatml_build(&ctx, argc - 2, argv + 2);
+			exit_code = luatml_build(&ctx, argc - 2, argv + 2);
 			break;
 		case LUATML_COMMAND_SERVE:
-			luatml_serve(&ctx, argc - 2, argv + 2);
+			exit_code = luatml_serve(&ctx, argc - 2, argv + 2);
+			break;
+		case LUATML_COMMAND_PARSE:
+			fprintf(stderr, "luatml-parse: not implemented\n");
 			break;
 		case LUATML_COMMAND_UNKNOWN:
 			fprintf(stderr, "luatml: unknown command '%s'\n", command_str);
@@ -64,6 +71,6 @@ int main(int argc, char **argv) {
 
 	luatml_destroy(&ctx);
 
-	return 0;
+	return exit_code;
 }
 

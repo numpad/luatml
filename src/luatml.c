@@ -15,8 +15,38 @@ LUATML_RESULT_TYPE luatml_init(luatml_ctx *ctx) {
 	}
 	luaL_openlibs(ctx->L);
 
+	ctx->input_path = NULL;
+	ctx->output_path = NULL;
 	ctx->server = NULL;
 
+
+	return LUATML_RESULT_OK;
+}
+
+LUATML_RESULT_TYPE luatml_init_with_args(luatml_ctx *ctx, int argc, char **argv) {
+	LUATML_RETURN_ON_ERROR(luatml_init(ctx));
+	
+	const char *option_waiting_for_arg = NULL;
+	for (int i = 0; i < argc; ++i) {
+		if (strcmp(argv[i], "--") == 0) break;
+
+		const int is_flag = (argv[i][0] == '-');
+		const int is_flag_value = !is_flag && (option_waiting_for_arg != NULL);
+		const int is_positional = !is_flag && !is_flag_value;
+
+		if (is_positional && ctx->input_path == NULL) {
+			ctx->input_path = argv[i];
+		} else if (is_flag) {
+			if (strcmp(argv[i], "-o") == 0 || strcmp(argv[i], "--output") == 0) {
+				option_waiting_for_arg = "--output";
+			}
+		} else if (is_flag_value) {
+			if (strcmp(option_waiting_for_arg, "--output") == 0) {
+				ctx->output_path = argv[i];
+			}
+			option_waiting_for_arg = NULL;
+		}
+	}
 
 	return LUATML_RESULT_OK;
 }
@@ -82,6 +112,22 @@ LUATML_RESULT_TYPE luatml_tohtml(luatml_ctx *ctx, char **output) {
 	*output = malloc((result_len + 1) * sizeof(char));
 	(*output)[result_len] = '\0';
 	strncpy(*output, result, strlen(result));
+
+	return LUATML_RESULT_OK;
+}
+
+LUATML_RESULT_TYPE luatml_convertfile(luatml_ctx *ctx, const char *path, char **output) {
+	LUATML_RETURN_ON_ERROR(
+		luatml_loadfile(ctx, path)
+	);
+
+	LUATML_RETURN_ON_ERROR(
+		luatml_evalfile(ctx)
+	);
+
+	LUATML_RETURN_ON_ERROR(
+		luatml_tohtml(ctx, output)
+	);
 
 	return LUATML_RESULT_OK;
 }

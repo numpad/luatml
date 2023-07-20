@@ -130,30 +130,22 @@ static LUATML_RESULT_TYPE build_dir(luatml_ctx *ctx, const char *path, const cha
 	}
 	
 
-	return LUATML_RESULT_ERROR;
+	return LUATML_RESULT_OK;
 }
 
 LUATML_RESULT_TYPE luatml_build(luatml_ctx *ctx, int argc, char **argv) {
-	if (argc == 0) {
-		fprintf(stderr, "luatml-build: missing argument \"path\".\n");
+	if (ctx->input_path == NULL) {
+		fprintf(stderr, "luatml-build: no input path given...\n");
 		return LUATML_RESULT_ERROR;
 	}
 
-	char *output_path = NULL;
-	for (int i = 0; i < argc; ++i) {
-		if (strcmp(argv[i], "-o") == 0 && (i+1) < argc) {
-			output_path = argv[i + 1];
-		}
-	}
-
-	char *buildtarget_path = argv[0];
-	if (luatmlfs_isfile(buildtarget_path)) {
+	if (luatmlfs_isfile(ctx->input_path)) {
 		LUATML_RETURN_ON_ERROR(
-			build_file(ctx, argv[0], output_path)
+			build_file(ctx, ctx->input_path, ctx->output_path)
 		);
-	} else if (luatmlfs_isdirectory(buildtarget_path)) {
+	} else if (luatmlfs_isdirectory(ctx->input_path)) {
 		LUATML_RETURN_ON_ERROR(
-			build_dir(ctx, argv[0], output_path)
+			build_dir(ctx, ctx->input_path, ctx->output_path)
 		);
 	}
 

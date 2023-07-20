@@ -2,6 +2,7 @@
 #define LUATML_H
 
 #include <lua.h>
+#include <microhttpd.h>
 
 #define LUATML_RESULT_TYPE  int
 #define LUATML_RESULT_OK    0
@@ -11,6 +12,7 @@
 
 typedef struct luatml_ctx_s {
 	lua_State *L;
+	struct MHD_Daemon *server;
 } luatml_ctx;
 
 LUATML_RESULT_TYPE luatml_init(luatml_ctx *ctx);

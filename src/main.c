@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "luatml_build.h"
+#include "luatml_serve.h"
 #include "luatml.h"
 
 void print_help(int argc, char **argv) {
@@ -54,7 +55,7 @@ int main(int argc, char **argv) {
 			luatml_build(&ctx, argc - 2, argv + 2);
 			break;
 		case LUATML_COMMAND_SERVE:
-			printf("luatml serve: not implemented\n");
+			luatml_serve(&ctx, argc - 2, argv + 2);
 			break;
 		case LUATML_COMMAND_UNKNOWN:
 			fprintf(stderr, "luatml: unknown command '%s'\n", command_str);

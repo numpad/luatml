@@ -13,8 +13,10 @@ LUATML_RESULT_TYPE luatml_init(luatml_ctx *ctx) {
 		fprintf(stderr, "luatml: failed to initialize lua state.\n");
 		return LUATML_RESULT_ERROR;
 	}
-
 	luaL_openlibs(ctx->L);
+
+	ctx->server = NULL;
+
 
 	return LUATML_RESULT_OK;
 }
@@ -26,6 +28,7 @@ LUATML_RESULT_TYPE luatml_destroy(luatml_ctx *ctx) {
 
 	lua_close(ctx->L);
 	ctx->L = NULL;
+	MHD_stop_daemon(ctx->server);
 
 	return LUATML_RESULT_OK;
 }

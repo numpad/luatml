@@ -119,7 +119,7 @@ end
 function html_registerdefaulttags()
 	html_registertags({
 		"html",
-		"head", "title", "meta", "style", "script",
+		"head", "title", "meta", "style", "script", "link",
 		"body",
 		"div", "img",
 		"p", "span", "b", "i", "h1", "h2", "h3", "h4", "h5",

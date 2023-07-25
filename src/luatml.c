@@ -6,6 +6,7 @@
 #include <lua.h>
 #include <lauxlib.h>
 #include <lualib.h>
+#include "luatml_fs.h"
 
 LUATML_RESULT_TYPE luatml_init(luatml_ctx *ctx) {
 	ctx->L = luaL_newstate();
@@ -46,6 +47,27 @@ LUATML_RESULT_TYPE luatml_init_with_args(luatml_ctx *ctx, int argc, char **argv)
 			}
 			option_waiting_for_arg = NULL;
 		}
+	}
+
+	if (luatmlfs_isdirectory(ctx->input_path)) {
+		// build the string to append to "package.path"
+		const char *path_addition_suffix = "/?.lua";
+		const size_t path_addition_len = 1 + strlen(ctx->input_path) + strlen(path_addition_suffix) + 1;
+		char path_addition[path_addition_len];
+		sprintf(path_addition, ";%s%s", ctx->input_path, path_addition_suffix);
+
+		// overwrite existing package path
+		lua_getglobal(ctx->L, "package");
+		lua_getfield(ctx->L, -1, "path");
+		const char *prev_path = lua_tostring(ctx->L, -1);
+		const size_t prev_path_len = strlen(prev_path);
+		const size_t new_path_len = prev_path_len + path_addition_len;
+		char newpath[new_path_len];
+		sprintf(newpath, "%s%s", prev_path, path_addition);
+		lua_pop(ctx->L, 1);
+		lua_pushstring(ctx->L, newpath);
+		lua_setfield(ctx->L, -2, "path");
+		lua_pop(ctx->L, 1);
 	}
 
 	return LUATML_RESULT_OK;

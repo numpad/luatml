@@ -41,7 +41,7 @@ LUATML_RESULT_TYPE luatml_serve(luatml_ctx *ctx, int argc, char **argv) {
 		return LUATML_RESULT_ERROR;
 	}
 
-	const char *input = argv[0];
+	const char *input = ctx->input_path;
 	if (!luatmlfs_isdirectory(input)) {
 		fprintf(stderr, "luatml-serve: server requires an input directory...\n");
 	}

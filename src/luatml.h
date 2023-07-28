@@ -13,8 +13,9 @@
 typedef struct luatml_ctx_s {
 	lua_State *L;
 
-	char *input_path;
-	char *output_path;
+	char *input_path;     // path to the luatml project.
+	char *path_to_routes; // (optional) path to the "routes" folder in the project.
+	char *output_path;    // (optional) output path when `build`ing.
 
 	// only set for luatml-serve
 	struct MHD_Daemon *server;

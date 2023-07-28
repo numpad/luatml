@@ -3,7 +3,7 @@ html_registertags()
 
 
 local links = {
-	"/contact",
+	"/controlflow",
 	"/about",
 	"/about/team",
 }

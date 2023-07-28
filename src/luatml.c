@@ -40,10 +40,14 @@ LUATML_RESULT_TYPE luatml_init_with_args(luatml_ctx *ctx, int argc, char **argv)
 		} else if (is_flag) {
 			if (strcmp(argv[i], "-o") == 0 || strcmp(argv[i], "--output") == 0) {
 				option_waiting_for_arg = "--output";
+			} else if (strcmp(argv[i], "-R") == 0 || strcmp(argv[i], "--routes") == 0) {
+				option_waiting_for_arg = "--routes";
 			}
 		} else if (is_flag_value) {
 			if (strcmp(option_waiting_for_arg, "--output") == 0) {
 				ctx->output_path = argv[i];
+			} else if (strcmp(option_waiting_for_arg, "--routes") == 0) {
+				ctx->path_to_routes = argv[i];
 			}
 			option_waiting_for_arg = NULL;
 		}

@@ -37,18 +37,24 @@ static LUATML_RESULT_TYPE request_to_file_path(luatml_ctx *ctx, const char *url,
 	strncpy(clean_url, url, url_len);
 	clean_url[url_len] = '\0';
 
-	// /about/ → /about.lua
+	// /about/ → /routes/about.lua
 	const size_t direct_file_len = route_path_len + 1 + url_len + strlen(".lua") + 1;
 	char direct_file[direct_file_len];
 	sprintf(direct_file, "%s/%s.lua", route_path, clean_url);
 
-	// /about/ → /about/index.lua
-	// const index_file_len = route_path_len + 1 + url_len + 1 + strlen("index.lua") + 1;
-	// char index_file[index_file_len];
-	// sprintf(index_file, "%s/%s/index.lua", route_path, clean_url, "index.lua");
+	// /about/ → /routes/about/index.lua
+	//const size_t index_file_len = route_path_len + 1 + url_len + 1 + strlen("index.lua") + 1;
+	//char index_file[index_file_len];
+	//sprintf(index_file, "%s/%s/index.lua", route_path, clean_url);
 	
-	*output = malloc(strlen(direct_file) + 1);
+	// /static/image.png -> /static/image.png
+	const size_t root_file_len = strlen(ctx->input_path) + 1 + url_len + 1;
+	char root_file[root_file_len];
+	sprintf(root_file, "%s/%s", ctx->input_path, url);
+
+	*output = malloc(strlen(direct_file) + 1 + strlen(root_file) + 1);
 	strcpy(*output, direct_file);
+	strcpy(*output + strlen(direct_file) + 1, root_file);
 
 	return LUATML_RESULT_OK;
 }
@@ -66,11 +72,24 @@ static enum MHD_Result on_request(void *cls, struct MHD_Connection *connection, 
 		return MHD_NO; // TODO: not a fix
 	}
 
+	// "<request_path>\0<rootfile_path>\0"
+	const char *rootfile_path = request_path + strlen(request_path) + 1;
+
 	int result = MHD_NO;
 	if (luatmlfs_isfile(request_path)) {
 		char *html;
 		luatml_convertfile(ctx, request_path, &html);
 		struct MHD_Response *response = MHD_create_response_from_buffer(strlen(html), html, MHD_RESPMEM_PERSISTENT);
+		result = MHD_queue_response(connection, 200, response);
+		MHD_destroy_response(response);
+	} else if (luatmlfs_isfile(rootfile_path)) {
+		// fd will be closed by MHD
+		int fd = open(rootfile_path, O_RDONLY);
+
+		const size_t fd_len = lseek(fd, 0, SEEK_END);
+		lseek(fd, 0, SEEK_SET);
+
+		struct MHD_Response *response = MHD_create_response_from_fd(fd_len, fd);
 		result = MHD_queue_response(connection, 200, response);
 		MHD_destroy_response(response);
 	} else {

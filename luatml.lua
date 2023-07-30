@@ -122,7 +122,7 @@ function html_registerdefaulttags()
 		"head", "title", "meta", "style", "script", "link",
 		"body",
 		"div", "img",
-		"p", "span", "b", "i", "h1", "h2", "h3", "h4", "h5",
+		"p", "span", "b", "i", "h1", "h2", "h3", "h4", "h5", "code",
 		"ul", "ol", "li", "a",
 		"form", "input", "button",
 	})

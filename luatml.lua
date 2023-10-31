@@ -1,4 +1,30 @@
 
+-- Fix Lua 5.4 "require".
+-- Before, "require" would only return a single value.
+-- Now it returns two on the first load of a module, the path to it.
+-- This fucks up loading components:
+-- ```lua
+-- div {
+--   require "my/component",  -- returns: true, "./my/component.lua".
+--   require "my/component",  -- returns true, nil. Just like Lua 5.3 and before
+-- }
+-- ```
+--
+-- TODO: This sucks in many ways and can easily break Lua 5.4 programs.
+local major, minor = _VERSION:match("Lua (%d+).(%d+)")
+if tonumber(major) >= 5 and tonumber(minor) >= 4 then
+	print("Lua 5.4+ detected, substituting 'require' function.")
+
+	local new_require = _G.require
+	local function old_require(modname)
+		local status, _ = new_require(modname)
+		return status
+	end
+
+	_G.require = old_require
+end
+
+
 function html_tag(name)
 	return function(data)
 		return { tag = name, data = data}

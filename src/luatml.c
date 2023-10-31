@@ -17,6 +17,7 @@ LUATML_RESULT_TYPE luatml_init(luatml_ctx *ctx) {
 	luaL_openlibs(ctx->L);
 
 	ctx->input_path = NULL;
+	ctx->path_to_routes = ".";
 	ctx->output_path = NULL;
 	ctx->server = NULL;
 

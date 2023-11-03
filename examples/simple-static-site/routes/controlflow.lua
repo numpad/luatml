@@ -2,7 +2,7 @@ require 'luatml'
 html_registertags()
 
 return html {
-	require 'examples/simple-static-site/components/head' {
+	require 'components/head' {
 		style [[
 			h2::before {
 				content: '#';
@@ -21,9 +21,14 @@ return html {
 		]],
 	},
 	body {
-		require 'examples/simple-static-site/components/navbar',
+		require 'components/navbar',
 		h1 "Control Flow",
 		p "In this document, we'll go through simple control flow examples using `luatml`.",
+
+		require 'components/code-example' {
+			title = "luatml_if",
+			apis = {},
+		},
 		
 		-- if / else
 		div {

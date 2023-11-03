@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <signal.h>
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include <microhttpd.h>
@@ -147,8 +148,21 @@ LUATML_RESULT_TYPE luatml_serve(luatml_ctx *ctx, int argc, char **argv) {
 		return LUATML_RESULT_ERROR;
 	}
 
-	printf("luatml-serve: running server on :%d, press enter to exit\n", port);
-	getchar();
+	printf("luatml-serve: server running on :%d\n", port);
+
+	// block execution
+	sigset_t signals;
+	sigemptyset(&signals);
+	sigaddset(&signals, SIGINT);
+	sigaddset(&signals, SIGQUIT);
+	sigaddset(&signals, SIGTERM);
+	sigprocmask(SIG_BLOCK, &signals, NULL);
+
+	int received_signal;
+	sigwait(&signals, &received_signal);
+
+	const char *signame = sys_signame[received_signal];
+	fprintf(stderr, "luatml-serve: received SIG%s, stopping...\n", signame);
 
 	return LUATML_RESULT_OK;
 }

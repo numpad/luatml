@@ -1,7 +1,6 @@
 require 'luatml'
 html_registertags()
 
-
 local links = {
 	"/controlflow",
 	"/about",
@@ -66,7 +65,11 @@ return html {
 		-- test static file
 		div {
 			style="display: flex; justify-content: center;",
-			img { src="/static/lenna.webp", alt="Any kind of image or static file works." },
+			img {
+				style="width: 100%;",
+				src="/static/lenna.webp",
+				alt="Any kind of image or static file works."
+			},
 		},
 	},
 }

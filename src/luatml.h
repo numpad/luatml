@@ -8,7 +8,7 @@
 #define LUATML_RESULT_OK    0
 #define LUATML_RESULT_ERROR 1
 
-#define LUATML_RETURN_ON_ERROR(expr) do { const LUATML_RESULT_TYPE result = (expr); if (result != LUATML_RESULT_OK) return result; } while(0);
+#define LUATML_RETURN_ON_ERROR(expr) do { const LUATML_RESULT_TYPE __result = (expr); if (__result != LUATML_RESULT_OK) return __result; } while(0);
 
 typedef struct luatml_ctx_s {
 	lua_State *L;
@@ -21,9 +21,12 @@ typedef struct luatml_ctx_s {
 	struct MHD_Daemon *server;
 } luatml_ctx;
 
+// init & destroy
 LUATML_RESULT_TYPE luatml_init(luatml_ctx *ctx);
 LUATML_RESULT_TYPE luatml_init_with_args(luatml_ctx *ctx, int argc, char **argv);
 LUATML_RESULT_TYPE luatml_destroy(luatml_ctx *ctx);
+
+LUATML_RESULT_TYPE luatml_reload_lua(luatml_ctx *ctx);
 
 LUATML_RESULT_TYPE luatml_loadfile(luatml_ctx *ctx, const char *path);
 LUATML_RESULT_TYPE luatml_evalfile(luatml_ctx *ctx);

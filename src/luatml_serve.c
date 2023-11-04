@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 #include <signal.h>
 #include <arpa/inet.h>
 #include <fcntl.h>
@@ -67,6 +68,8 @@ static enum MHD_Result on_request(void *cls, struct MHD_Connection *connection, 
 	
 	// get userdata
 	luatml_ctx *ctx = (luatml_ctx *)cls;
+	const int reload_result = luatml_reload_lua(ctx);
+	assert(reload_result == LUATML_RESULT_OK);
 
 	char *request_path = NULL;
 	if (request_to_file_path(ctx, url, &request_path) != LUATML_RESULT_OK) {
@@ -148,7 +151,7 @@ LUATML_RESULT_TYPE luatml_serve(luatml_ctx *ctx, int argc, char **argv) {
 		return LUATML_RESULT_ERROR;
 	}
 
-	printf("luatml-serve: server running on :%d\n", port);
+	printf("luatml-serve: server running on :%d...\n", port);
 
 	// block execution
 	sigset_t signals;

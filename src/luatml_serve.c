@@ -10,6 +10,35 @@
 #include <microhttpd.h>
 #include "luatml_fs.h"
 
+static const char *LUATML_HTML_PAGE_404 =
+	"<!DOCTYPE html>"
+	"<html>"
+	"<head>"
+	"<meta charset=\"utf-8\">"
+	"<title>file not found</title>"
+	"<style>h1, p { font-family: monospace; }</style>"
+	"</head>"
+	"<body>"
+	"<h1>404 - file not found</h1>"
+	"<p>the requested url does not exist.</p>"
+	"</body>"
+	"</html>";
+
+static const char *LUATML_HTML_PAGE_500 =
+	"<!DOCTYPE html>"
+	"<html>"
+	"<head>"
+	"<meta charset=\"utf-8\">"
+	"<title>http 500 - internal server error</title>"
+	"<style>h1, p { font-family: monospace; }</style>"
+	"</head>"
+	"<body>"
+	"<h1>500 - internal server error</h1>"
+	"<p>the server could not handle the request.</p>"
+	"</body>"
+	"</html>";
+
+
 static LUATML_RESULT_TYPE request_to_file_path(luatml_ctx *ctx, const char *url, char **output) {
 	if (ctx->input_path == NULL) {
 		fprintf(stderr, "luatml-serve: serving without explicit directory not supported...\n");
@@ -90,19 +119,7 @@ static enum MHD_Result on_request(void *cls, struct MHD_Connection *connection, 
 			http_status = 200;
 		} else {
 			http_status = 500;
-			html =
-				"<!DOCTYPE html>"
-				"<html>"
-				"<head>"
-				"<meta charset=\"utf-8\">"
-				"<title>http 500 - internal server error</title>"
-				"<style>h1, p { font-family: monospace; }</style>"
-				"</head>"
-				"<body>"
-				"<h1>500 - internal server error</h1>"
-				"<p>the server could not handle the request.</p>"
-				"</body>"
-				"</html>";
+			html = LUATML_HTML_PAGE_500;
 		}
 
 		struct MHD_Response *response = MHD_create_response_from_buffer(strlen(html), html, MHD_RESPMEM_PERSISTENT);
@@ -119,7 +136,7 @@ static enum MHD_Result on_request(void *cls, struct MHD_Connection *connection, 
 		result = MHD_queue_response(connection, 200, response);
 		MHD_destroy_response(response);
 	} else {
-		const char *body = "<!DOCTYPE html><html><head><meta charset=\"utf-8\"><title>file not found</title><style>h1, p { font-family: monospace; }</style></head><body><h1>404 - file not found</h1><p>the requested url does not exist.</p></body></html>";
+		const char *body = LUATML_HTML_PAGE_404;
 		struct MHD_Response *response = MHD_create_response_from_buffer(strlen(body), (void*)body, MHD_RESPMEM_PERSISTENT);
 		result = MHD_queue_response(connection, 404, response);
 		MHD_destroy_response(response);

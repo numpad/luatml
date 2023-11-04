@@ -6,7 +6,7 @@ CFLAGS = -std=c99 -fPIC -Wall -Wextra -pedantic \
 INCLUDES = -Isrc/
 LIBS = -lm -llua -lmicrohttpd
 
-SRC = src/main.c src/luatml.c src/luatml_build.c src/luatml_serve.c src/luatml_fs.c
+SRC = src/main.c src/luatml.c src/luatml_build.c src/luatml_serve.c src/luatml_fs.c src/luatml_lib.c
 OBJ = $(SRC:.c=.o)
 TARGET = luatml
 

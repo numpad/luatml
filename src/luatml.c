@@ -8,18 +8,22 @@
 #include <lauxlib.h>
 #include <lualib.h>
 #include "luatml_fs.h"
+#include "luatml_lib.h"
 
-static LUATML_RESULT_TYPE init_lua_state(lua_State **L) {
-	assert(L != NULL);
-	assert(*L == NULL);
+static LUATML_RESULT_TYPE init_lua_state(luatml_ctx *ctx) {
+	assert(ctx != NULL);
+	assert(ctx->L == NULL);
 
-	*L = luaL_newstate();
-	if (*L == NULL) {
+	ctx->L = luaL_newstate();
+	if (ctx->L == NULL) {
 		fprintf(stderr, "luatml: failed to initialize lua state.\n");
 		return LUATML_RESULT_ERROR;
 	}
 
-	luaL_openlibs(*L);
+	// open libraries
+	luaL_openlibs(ctx->L);
+	luatml_lib_openlibs(ctx);
+
 	return LUATML_RESULT_OK;
 }
 
@@ -59,7 +63,7 @@ LUATML_RESULT_TYPE luatml_init(luatml_ctx *ctx) {
 	ctx->server = NULL;
 	ctx->L = NULL;
 
-	const int result = init_lua_state(&ctx->L);
+	const int result = init_lua_state(ctx);
 	LUATML_RETURN_ON_ERROR(result);
 	
 	return LUATML_RESULT_OK;
@@ -119,7 +123,7 @@ LUATML_RESULT_TYPE luatml_reload_lua(luatml_ctx *ctx) {
 	ctx->L = NULL;
 
 	int result;
-	result = init_lua_state(&ctx->L);
+	result = init_lua_state(ctx);
 	LUATML_RETURN_ON_ERROR(result);
 
 	result = add_package_search_dir(ctx, ctx->input_path);

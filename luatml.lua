@@ -58,6 +58,7 @@ function html_foreach(list)
 	return function(html)
 		local result = {}
 		for i, listitem in ipairs(list) do
+			-- TODO: `html` could be anything, currently just a table is handled.
 			for j, tag in ipairs(html) do
 				if type(tag) == "function" then
 					-- TODO: deep search, or write "context"

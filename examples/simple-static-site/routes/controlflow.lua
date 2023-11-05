@@ -25,11 +25,6 @@ return html {
 		h1 "Control Flow",
 		p "In this document, we'll go through simple control flow examples using `luatml`.",
 
-		require 'components/code-example' {
-			title = "luatml_if",
-			apis = {},
-		},
-		
 		-- if / else
 		div {
 			h2 "if / else",

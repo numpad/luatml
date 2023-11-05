@@ -33,5 +33,7 @@ LUATML_RESULT_TYPE luatml_lib_openlibs(luatml_ctx *ctx) {
 	assert(ctx->L != NULL);
 
 	lua_register(ctx->L, "luatml_listfiles", luatml_lib_listfiles);
+
+	return LUATML_RESULT_OK;
 }
 

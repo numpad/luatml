@@ -71,6 +71,17 @@ return html {
 				alt="Any kind of image or static file works."
 			},
 		},
+
+		-- test file list
+		html_foreach(luatml_listfiles("src")) {function(item, i, arr)
+			if item:sub(-2) ~= ".c" and item:sub(-2) ~= ".h" then
+				return ""
+			end
+
+			return p {
+				i, ". ", item
+			}
+		end}
 	},
 }
 

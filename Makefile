@@ -1,6 +1,6 @@
 
 CC = gcc
-CFLAGS = -std=c99 -fPIC -Wall -Wextra -pedantic \
+CFLAGS = -std=c99 -pthread -fPIC -Wall -Wextra -pedantic \
 		 -Wfloat-equal -Wshadow -Wno-unused-parameter -Wl,--export-dynamic \
 		 -Wswitch-enum -Wcast-qual -Wnull-dereference -Wunused-result # -Waggregate-return
 INCLUDES = -Isrc/

@@ -149,6 +149,37 @@ static enum MHD_Result on_request(void *cls, struct MHD_Connection *connection, 
 	return result;
 }
 
+static const char *get_name_of_signal(int sig) {
+	switch (sig) {
+		case SIGINT:  return "SIGINT";
+		case SIGQUIT: return "SIGQUIT";
+		case SIGTERM: return "SIGTERM";
+	};
+
+	return "unknown signal";
+}
+
+static void block_until_signal() {
+#ifdef _POSIX_THREADS
+	// block execution
+	sigset_t signals;
+	sigemptyset(&signals);
+	sigaddset(&signals, SIGINT);
+	sigaddset(&signals, SIGQUIT);
+	sigaddset(&signals, SIGTERM);
+	sigprocmask(SIG_BLOCK, &signals, NULL);
+
+	int received_signal;
+	sigwait(&signals, &received_signal);
+
+	const char *received_signal_name = get_name_of_signal(received_signal);
+	fprintf(stderr, "luatml-serve: received SIG%s, stopping server...\n", received_signal_name);
+#else
+#warning "No _POSIX_THREADS defined, using fallback blocking with `getchar()`."
+	getchar();
+#endif
+}
+
 LUATML_RESULT_TYPE luatml_serve(luatml_ctx *ctx, int argc, char **argv) {
 	if (argc == 0) {
 		fprintf(stderr, "luatml-serve: no input given!\n");
@@ -170,19 +201,7 @@ LUATML_RESULT_TYPE luatml_serve(luatml_ctx *ctx, int argc, char **argv) {
 
 	printf("luatml-serve: server running on :%d...\n", port);
 
-	// block execution
-	sigset_t signals;
-	sigemptyset(&signals);
-	sigaddset(&signals, SIGINT);
-	sigaddset(&signals, SIGQUIT);
-	sigaddset(&signals, SIGTERM);
-	sigprocmask(SIG_BLOCK, &signals, NULL);
-
-	int received_signal;
-	sigwait(&signals, &received_signal);
-
-	const char *signame = sys_signame[received_signal];
-	fprintf(stderr, "luatml-serve: received SIG%s, stopping...\n", signame);
+	block_until_signal();
 
 	return LUATML_RESULT_OK;
 }

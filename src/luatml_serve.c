@@ -91,15 +91,73 @@ static LUATML_RESULT_TYPE request_to_file_path(luatml_ctx *ctx, const char *url,
 	return LUATML_RESULT_OK;
 }
 
+static enum MHD_Result on_post(void *cls,
+	       enum MHD_ValueKind kind,
+	       const char *key,
+	       const char *filename,
+	       const char *content_type,
+	       const char *transfer_encoding,
+	       const char *data, unsigned long off, unsigned long size)
+{
+	luatml_ctx *ctx = (luatml_ctx *)cls;
+
+	// add key to post data
+	lua_getglobal(ctx->L, "POST");
+	assert(lua_istable(ctx->L, -1));
+
+	if (kind == MHD_POSTDATA_KIND) {
+		printf("POST: %s (%s) = %.*s\n", key, content_type, (int)size, data + off);
+		lua_pushlstring(ctx->L, data + off, size);
+		lua_setfield(ctx->L, -2, key);
+	}
+
+	return MHD_YES;
+}
+
 static enum MHD_Result on_request(void *cls, struct MHD_Connection *connection, const char *url, const char *method, const char *version, const char *upload_data, size_t *upload_data_size, void **conn_cls) {
+	// get userdata
+	luatml_ctx *ctx = (luatml_ctx *)cls;
+
+	// reset lua state
+	if (strcmp(method, MHD_HTTP_METHOD_GET) == 0 || conn_cls == NULL) {
+		const int reload_result = luatml_reload_lua(ctx);
+		assert(reload_result == LUATML_RESULT_OK);
+	}
+
+	// handle post
+	if (strcmp(method, MHD_HTTP_METHOD_POST) == 0
+		|| strcmp(method, MHD_HTTP_METHOD_PUT) == 0
+		|| strcmp(method, MHD_HTTP_METHOD_DELETE) == 0
+		)
+	{
+		struct MHD_PostProcessor *pp = *conn_cls;
+		if (pp == NULL) {
+			pp = MHD_create_post_processor(connection, 512, &on_post, (void*)ctx);
+			*conn_cls = pp;
+
+			printf("new table\n");
+			lua_newtable(ctx->L);
+			lua_setglobal(ctx->L, "POST");
+			return MHD_YES;
+		}
+		if (*upload_data_size) {
+			MHD_post_process(pp, upload_data, *upload_data_size);
+			*upload_data_size = 0;
+			return MHD_YES;
+		} else {
+			// TODO: destroy on MHD_OPTION_NOTIFY_COMPLETED
+			MHD_destroy_post_processor(pp);
+		}
+	} else {
+		printf("remove table\n");
+		lua_pushnil(ctx->L);
+		lua_setglobal(ctx->L, "POST");
+	}
+
+	// new connection
 	struct sockaddr_in **addr_in = (struct sockaddr_in **)MHD_get_connection_info(connection, MHD_CONNECTION_INFO_CLIENT_ADDRESS);
 	printf("%15s  %s  %-7s  %s\n", inet_ntoa((*addr_in)->sin_addr), version, method, url);
 	
-	// get userdata
-	luatml_ctx *ctx = (luatml_ctx *)cls;
-	const int reload_result = luatml_reload_lua(ctx);
-	assert(reload_result == LUATML_RESULT_OK);
-
 	char *request_path = NULL;
 	if (request_to_file_path(ctx, url, &request_path) != LUATML_RESULT_OK) {
 		fprintf(stderr, "could not convert url to file path!\n");
@@ -108,6 +166,7 @@ static enum MHD_Result on_request(void *cls, struct MHD_Connection *connection, 
 
 	// "<request_path>\0<rootfile_path>\0"
 	const char *rootfile_path = request_path + strlen(request_path) + 1;
+
 
 	int result = MHD_NO;
 	if (luatmlfs_isfile(request_path)) {
